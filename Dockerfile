@@ -11,4 +11,4 @@ RUN npm install
 COPY . .
 
 # 一番下を nodemon から通常の node に変更
-CMD ["node", "app.js"]
+CMD ["npm", "start"]
