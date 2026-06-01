@@ -1,0 +1,20 @@
+{
+  "name": "team-chat-app",
+  "version": "1.0.0",
+  "description": "Team Chat App with Spreadsheet Report",
+  "main": "app.js",
+  "scripts": {
+    "start": "node app.js",
+    "dev": "npx nodemon app.js"
+  },
+  "dependencies": {
+    "@prisma/client": "^5.0.0",
+    "cookie-parser": "^1.4.6",
+    "express": "^4.18.2",
+    "pug": "^3.0.2"
+  },
+  "devDependencies": {
+    "nodemon": "^3.0.1",
+    "prisma": "^5.0.0"
+  }
+}
