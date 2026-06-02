@@ -1,19 +1,12 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
 datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
 }
 
-generator client {
-  provider = "prisma-client-js"
-}
-
-// 💡 ここが超重要！メッセージを保存するためのテーブルの定義です
-model Message {
-  id        Int      @id @default(autoincrement())
-  username  String
-  content   String
-  createdAt DateTime @default(now())
-}
 model Message {
   id        Int      @id @default(autoincrement())
   content   String
@@ -21,11 +14,10 @@ model Message {
   createdAt DateTime @default(now())
 }
 
-// ⬇︎ ここから下を新しく追記します！
 model Task {
   id        Int      @id @default(autoincrement())
   title     String
   username  String
-  status    String   // "未着手", "進行中", "完了" などの文字を入れます
+  status    String
   createdAt DateTime @default(now())
 }
