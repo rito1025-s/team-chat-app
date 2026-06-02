@@ -4,7 +4,7 @@
   "description": "Team Chat App with Spreadsheet Report",
   "main": "app.js",
   "scripts": {
-    "start": "npx prisma generate && npx prisma migrate deploy && node app.js",
+    "start": "npx prisma generate && npx prisma db push && node app.js",
     "dev": "npx nodemon app.js"
   },
   "dependencies": {

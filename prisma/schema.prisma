@@ -14,3 +14,18 @@ model Message {
   content   String
   createdAt DateTime @default(now())
 }
+model Message {
+  id        Int      @id @default(autoincrement())
+  content   String
+  username  String
+  createdAt DateTime @default(now())
+}
+
+// ⬇︎ ここから下を新しく追記します！
+model Task {
+  id        Int      @id @default(autoincrement())
+  title     String
+  username  String
+  status    String   // "未着手", "進行中", "完了" などの文字を入れます
+  createdAt DateTime @default(now())
+}
