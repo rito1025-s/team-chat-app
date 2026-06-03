@@ -22,6 +22,7 @@ const checkAuth = (req, res, next) => {
 
 // ログイン画面
 app.get('/login', (req, res) => res.render('login'));
+// ログイン画面のPOST処理のすぐ下あたりに追加します
 app.post('/login', (req, res) => {
   if (req.body.password === 'pass123') {
     req.session.username = req.body.username;
@@ -30,6 +31,14 @@ app.post('/login', (req, res) => {
     res.send('パスワードが違います。');
   }
 });
+
+// ⬇︎ ここから追記
+app.get('/logout', (req, res) => {
+  req.session.destroy(() => {
+    res.redirect('/login');
+  });
+});
+// ⬆︎ ここまで追記
 
 // メイン画面（チャット ＆ タスク一覧）
 app.get('/', checkAuth, async (req, res) => {

@@ -21,7 +21,11 @@ html
   body
     // 左側：チャット
     div.chat-section
-      h2 💬 チームチャット
+      div(style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;")
+        h2(style="margin: 0;") 💬 チームチャット
+        // ⬇︎ ログアウトボタンをここに復活させました！
+        a(href="/logout" style="color: #dc3545; text-decoration: none; font-size: 0.9em; border: 1px solid #dc3545; padding: 5px 10px; border-radius: 4px;") ログアウト
+      
       div.messages
         each msg in messages
           div.message
