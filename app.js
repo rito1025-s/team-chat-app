@@ -1,88 +1,70 @@
 const express = require('express');
-const cookieParser = require('cookie-parser');
 const { PrismaClient } = require('@prisma/client');
+const session = require('express-session');
 
 const app = express();
 const prisma = new PrismaClient();
-// Renderが指定するポート、または3000番を使う設定
-const PORT = process.env.PORT || 3000;
-
-app.use(express.urlencoded({ extended: true }));
-app.use(cookieParser());
 
 app.set('view engine', 'pug');
-app.set('views', './views');
+app.use(express.urlencoded({ extended: true }));
+app.use(session({
+  secret: 'secret-key',
+  resave: false,
+  saveUninitialized: true
+}));
 
-// 【変更点】トップページ：データベースからメッセージ一覧を読み込んで表示する
-app.get('/', async (req, res) => {
-    const username = req.cookies.username;
-    
-    if (!username) {
-        return res.redirect('/login');
+// ログインチェック用ミドルウェア
+const checkAuth = (req, res, next) => {
+  if (!req.session.username) return res.redirect('/login');
+  next();
+};
+
+// ログイン画面
+app.get('/login', (req, res) => res.render('login'));
+app.post('/login', (req, res) => {
+  if (req.body.password === 'pass123') {
+    req.session.username = req.body.username;
+    res.redirect('/');
+  } else {
+    res.send('パスワードが違います。');
+  }
+});
+
+// メイン画面（チャット ＆ タスク一覧）
+app.get('/', checkAuth, async (req, res) => {
+  const messages = await prisma.message.findMany({ orderBy: { createdAt: 'desc' } });
+  const tasks = await prisma.task.findMany({ orderBy: { createdAt: 'desc' } }); // タスクを取得
+  res.render('index', { username: req.session.username, messages, tasks });
+});
+
+// メッセージ投稿
+app.post('/message', checkAuth, async (req, res) => {
+  await prisma.message.create({
+    data: { content: req.body.content, username: req.session.username }
+  });
+  res.redirect('/');
+});
+
+// タスク追加
+app.post('/task', checkAuth, async (req, res) => {
+  await prisma.task.create({
+    data: { 
+      title: req.body.title, 
+      username: req.session.username,
+      status: '未着手' 
     }
-    
-    try {
-        // 💡 Prismaを使って、データベースからメッセージを「作成日時の新しい順」に取得する
-        const messages = await prisma.message.findMany({
-            orderBy: { createdAt: 'desc' }
-        });
-        
-        // チャット画面（index.pug）に、ユーザー名とメッセージ一覧を渡して表示
-        res.render('index', { username, messages });
-    } catch (error) {
-        console.error(error);
-        res.status(500).send('データベースの読み込みに失敗しました。');
-    }
+  });
+  res.redirect('/');
 });
 
-// ログイン表示
-app.get('/login', (req, res) => {
-    res.render('login');
+// タスク更新
+app.post('/task/update', checkAuth, async (req, res) => {
+  await prisma.task.update({
+    where: { id: parseInt(req.body.id) },
+    data: { status: req.body.status }
+  });
+  res.redirect('/');
 });
 
-// ログイン処理
-app.post('/login', async (req, res) => {
-    const { username, password } = req.body;
-    if (password === 'pass123') {
-        res.cookie('username', username, { maxAge: 60 * 60 * 1000 });
-        return res.redirect('/');
-    } else {
-        return res.render('login', { error: 'パスワードが間違っています。(正解は pass123)' });
-    }
-});
-
-// ログアウト処理
-app.get('/logout', (req, res) => {
-    res.clearCookie('username');
-    res.redirect('/login');
-});
-
-// 【新機能】メッセージを投稿し、データベースに保存する（POSTメソッド）
-app.post('/message', async (req, res) => {
-    const username = req.cookies.username;
-    const { content } = req.body;
-
-    if (!username) {
-        return res.redirect('/login');
-    }
-
-    try {
-        // 💡 Prismaを使って、データベースにメッセージを新しく登録（保存）する！
-        await prisma.message.create({
-            data: {
-                username: username,
-                content: content
-            }
-        });
-        
-        // 保存が終わったら、トップページ（チャット画面）に自動リロードで戻る
-        res.redirect('/');
-    } catch (error) {
-        console.error(error);
-        res.status(500).send('メッセージの保存に失敗しました。');
-    }
-});
-
-app.listen(PORT, () => {
-    console.log(`サーバーが起動しました！ http://localhost:${PORT}`);
-});
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
