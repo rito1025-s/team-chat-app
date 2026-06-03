@@ -1,6 +1,7 @@
 const express = require('express');
 const { PrismaClient } = require('@prisma/client');
 const session = require('express-session');
+const cookieParser = require('cookie-parser'); // ⬅︎ この行を追加！
 
 const app = express();
 const prisma = new PrismaClient();
